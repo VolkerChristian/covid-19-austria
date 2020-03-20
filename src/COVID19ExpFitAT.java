@@ -135,7 +135,6 @@ public class COVID19ExpFitAT {
 
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 		LocalDate localDate = LocalDate.now();
-		localDate = localDate.minusDays(1);
 		String dateString = dtf.format(localDate);
 		
 		System.out.println(dateString);
