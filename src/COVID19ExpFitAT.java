@@ -231,7 +231,7 @@ public class COVID19ExpFitAT {
 		d = expFit.fit(size);
 		plot.series("Fit: " + dtf.format(localDate.minusDays(6)), d,
 				Plot.seriesOpts().color(Color.ORANGE).marker(Plot.Marker.NONE));
-		System.out.println("Error: Today - 5 Days: " + Math.sqrt(expFit.error2()));
+		System.out.println("Error: Today - 6 Days: " + Math.sqrt(expFit.error2()));
 
 		try {
 			plot.save("COVID-19_ExpFit_" + dateString, "png");
