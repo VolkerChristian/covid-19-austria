@@ -92,17 +92,13 @@ class ExpFit {
 		return result;
 	}
 
-	public static ExpFit expFit(ArrayList<Infected> list, int max) {
-		long[] infactedCases = new long[list.size()];
-		for (int i = 0; i < list.size(); i++) {
-			infactedCases[i] = list.get(i).count;
-		}
-		ExpFit fit = new ExpFit(a(infactedCases, max), b(infactedCases, max));
+	public static ExpFit expFit(long[] cases, int max) {
+		ExpFit fit = new ExpFit(a(cases, max), b(cases, max));
 
 		for (int i = 0; i < max; i++) {
 			double value = (Math.exp(fit.a()) * Math.exp(fit.b() * i));
 
-			fit._error2Sum += Math.abs(infactedCases[i] - value) * Math.abs(infactedCases[i] - value);
+			fit._error2Sum += Math.abs(cases[i] - value) * Math.abs(cases[i] - value);
 		}
 
 		fit._error2Sum /= max;
@@ -146,17 +142,17 @@ class Infected {
 	public static void update(String date, long count) {
 		list.add(new Infected(date, count));
 	}
-	
-	public static long getCount(int day) {
-		return list.get(day).count;
-	}
-	
+
 	public static int size() {
 		return list.size();
 	}
 	
-	public static ArrayList<Infected> getList() {
-		return list;
+	public static long[] cases() {
+		long[] cases = new long[list.size()];
+		for (int i = 0; i < list.size(); i++) {
+			cases[i] = list.get(i).count;
+		}
+		return cases;
 	}
 }
 
@@ -198,36 +194,40 @@ public class COVID19ExpFitAT {
 				.title("COVID-19 - Least Squares Exponential Fit (Austria) - " + dateString)
 				.legend(Plot.LegendFormat.BOTTOM)).xAxis("Days", null).yAxis("Infected", null);
 
+		long[] cases = Infected.cases();
+		int size = Infected.size();
+
+// Empirical data
 		Data d1 = Plot.data();
-		for (int i = 0; i < Infected.size(); i++) {
-			d1.xy(i, Infected.getCount(i));
+		for (int i = 0; i < size; i++) {
+			d1.xy(i, cases[i]);
 		}
 		plot.series("Real (3:00 p.m.)", d1, 
 				Plot.seriesOpts().color(Color.RED).marker(Plot.Marker.NONE));
-
 		
-		ArrayList<Infected> list = Infected.getList();
-		int size = Infected.size();
-		
-		ExpFit expFit = ExpFit.expFit(list, size);
+// Fit for today
+		ExpFit expFit = ExpFit.expFit(cases, size);
 		Data d = expFit.fit(size);
 		plot.series("Fit: " + dtf.format(localDate), d, 
 				Plot.seriesOpts().color(Color.BLUE).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 0 Days: " + Math.sqrt(expFit.error2()));
 
-		expFit = ExpFit.expFit(list, size - 1);
+// Fit for today - 1
+		expFit = ExpFit.expFit(cases, size - 1);
 		d = expFit.fit(size);
 		plot.series("Fit: " + dtf.format(localDate.minusDays(1)), d,
 				Plot.seriesOpts().color(Color.CYAN).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 2 Days: " + Math.sqrt(expFit.error2()));
 
-		expFit = ExpFit.expFit(list, size - 3);
+// Fit for today - 3
+		expFit = ExpFit.expFit(cases, size - 3);
 		d = expFit.fit(size);
 		plot.series("Fit: " + dtf.format(localDate.minusDays(3)), d,
 				Plot.seriesOpts().color(Color.GREEN).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 2 Days: " + Math.sqrt(expFit.error2()));
 
-		expFit = ExpFit.expFit(list, size - 6);
+// Fit for today - 6
+		expFit = ExpFit.expFit(cases, size - 6);
 		d = expFit.fit(size);
 		plot.series("Fit: " + dtf.format(localDate.minusDays(6)), d,
 				Plot.seriesOpts().color(Color.ORANGE).marker(Plot.Marker.NONE));
@@ -239,6 +239,6 @@ public class COVID19ExpFitAT {
 			e.printStackTrace();
 		}
 
-		System.out.println("Ready ");
+		System.out.println("Ready");
 	}
 }
