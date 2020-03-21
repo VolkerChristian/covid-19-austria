@@ -106,6 +106,7 @@ class ExpFit {
 		return fit;
 	}
 
+	// f(t) = Math.exp(a) * Math.exp(b * t);
 	public double a() {
 		return _a;
 	}
@@ -117,22 +118,27 @@ class ExpFit {
 	public double error2() {
 		return _error2Sum;
 	}
+	
+	public double dt() {
+		return Math.log(2) / b();
+	}
 
 	public Data fit(long size) {
-		Data d = Plot.data();
+		Data fit = Plot.data();
 		for (int i = 0; i < size; i++) {
 			int value = (int) (Math.exp(_a) * Math.exp(_b * i));
-			d.xy(i, value);
+			fit.xy(i, value);
 		}
 
-		return d;
+		return fit;
 	}
 }
 
 class Infected {
-	static ArrayList<Infected> list = new ArrayList<Infected>();
-	String date;
-	long count;
+	private static ArrayList<Infected> list = new ArrayList<Infected>();
+	@SuppressWarnings("unused")
+	private String date;
+	private long count;
 
 	private Infected(String date, long count) {
 		this.date = date;
@@ -143,7 +149,7 @@ class Infected {
 		list.add(new Infected(date, count));
 	}
 
-	public static int size() {
+	public static int numberOfDays() {
 		return list.size();
 	}
 	
@@ -195,50 +201,78 @@ public class COVID19ExpFitAT {
 				.legend(Plot.LegendFormat.BOTTOM)).xAxis("Days", null).yAxis("Infected", null);
 
 		long[] cases = Infected.cases();
-		int size = Infected.size();
+		int numberOfDays = Infected.numberOfDays();
 
 // Empirical data
 		Data d1 = Plot.data();
-		for (int i = 0; i < size; i++) {
+		for (int i = 0; i < numberOfDays; i++) {
 			d1.xy(i, cases[i]);
 		}
 		plot.series("Real (3:00 p.m.)", d1, 
 				Plot.seriesOpts().color(Color.RED).marker(Plot.Marker.NONE));
 		
 // Fit for today
-		ExpFit expFit = ExpFit.expFit(cases, size);
-		Data d = expFit.fit(size);
-		plot.series("Fit: " + dtf.format(localDate), d, 
+		ExpFit expFit = ExpFit.expFit(cases, numberOfDays);
+		Data fit = expFit.fit(numberOfDays);
+		plot.series("Fit: " + dtf.format(localDate), fit, 
 				Plot.seriesOpts().color(Color.BLUE).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 0 Days: " + Math.sqrt(expFit.error2()));
+		System.out.println("Double ratio: " + expFit.dt());
 
 // Fit for today - 1
-		expFit = ExpFit.expFit(cases, size - 1);
-		d = expFit.fit(size);
-		plot.series("Fit: " + dtf.format(localDate.minusDays(1)), d,
+		expFit = ExpFit.expFit(cases, numberOfDays - 1);
+		fit = expFit.fit(numberOfDays);
+		plot.series("Fit: " + dtf.format(localDate.minusDays(1)), fit,
 				Plot.seriesOpts().color(Color.CYAN).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 2 Days: " + Math.sqrt(expFit.error2()));
+		System.out.println("Double ratio: " + expFit.dt());
 
 // Fit for today - 3
-		expFit = ExpFit.expFit(cases, size - 3);
-		d = expFit.fit(size);
-		plot.series("Fit: " + dtf.format(localDate.minusDays(3)), d,
+		expFit = ExpFit.expFit(cases, numberOfDays - 3);
+		fit = expFit.fit(numberOfDays);
+		plot.series("Fit: " + dtf.format(localDate.minusDays(3)), fit,
 				Plot.seriesOpts().color(Color.GREEN).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 2 Days: " + Math.sqrt(expFit.error2()));
+		System.out.println("Double ratio: " + expFit.dt());
 
 // Fit for today - 6
-		expFit = ExpFit.expFit(cases, size - 6);
-		d = expFit.fit(size);
-		plot.series("Fit: " + dtf.format(localDate.minusDays(6)), d,
+		expFit = ExpFit.expFit(cases, numberOfDays - 6);
+		fit = expFit.fit(numberOfDays);
+		plot.series("Fit: " + dtf.format(localDate.minusDays(6)), fit,
 				Plot.seriesOpts().color(Color.ORANGE).marker(Plot.Marker.NONE));
 		System.out.println("Error: Today - 6 Days: " + Math.sqrt(expFit.error2()));
+		System.out.println("Double ratio: " + expFit.dt());
 
 		try {
 			plot.save("COVID-19_ExpFit_" + dateString, "png");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		Data doubleRatio = Plot.data();
+		for (int i = 0; i <= numberOfDays; i++) {
+			expFit = ExpFit.expFit(cases, i);
+			double dt = expFit.dt();
+			
+			System.out.println("Double ratio day " + i + ": " + dt);
+			
+			if (!Double.isNaN(dt) && !Double.isInfinite(dt)) {
+				doubleRatio.xy(i, expFit.dt());
+			}
+		}
 
+		plot = Plot.plot(Plot.plotOpts().height(700).width(1024)
+				.title("COVID-19 - Least Squares Exponential Fit (Austria) - " + dateString)
+				.legend(Plot.LegendFormat.BOTTOM)).xAxis("Days", null).yAxis("Double ratio", null);
+		plot.series("Doubling time", doubleRatio, 
+				Plot.seriesOpts().color(Color.BLUE).marker(Plot.Marker.NONE));
+		
+		try {
+			plot.save("double-ratio-" + dateString, "png");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 		System.out.println("Ready");
 	}
 }
