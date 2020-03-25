@@ -256,7 +256,8 @@ public class COVID19ExpFitAT {
 		Infected.update("21.3.", 2814, 2932);
 		Infected.update("22.3.", 3244, 2823);
 		Infected.update("23.3.", 3924, 2061);
-		Infected.update("24.3.", 4876, 4962);
+		Infected.update("24.3.", 4876, 4962); // tested total: 28391
+		Infected.update("25.3.", 5560, 4016); // tested total: 32407
 
 		System.out.println("Total Tested: " + Infected.getTotalTested());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -272,7 +273,7 @@ public class COVID19ExpFitAT {
 						legend(Plot.LegendFormat.BOTTOM).
 						grids(Infected.numberOfDays() - 1, 10)).
 				xAxis("Days", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT)).
-				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 5000));
+				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 10000));
 
 		long[] cases = Infected.cases();
 		int numberOfDays = Infected.numberOfDays();
@@ -352,19 +353,19 @@ public class COVID19ExpFitAT {
 		while(it.hasNext()) {
 			Infected infected = it.next();
 			
-			infected_tested.xy(DateWithOffset.getTime(i), (double) infected.getInfected() / infected.getCummulatedTested());
+			infected_tested.xy(DateWithOffset.getTime(i), 100 * (double) infected.getInfected() / infected.getCummulatedTested());
 			i++;
 		}
 		
 		plot = Plot.
 				plot(Plot.plotOpts().height(700).width(1024).
-						title("COVID-19 - Ratio of Total Infected to Total Tested Persons (Austria) - " + dateString).
+						title("COVID-19 - Ratio [%] of Total Infected to Total Tested Persons (Austria) - " + dateString).
 						legend(Plot.LegendFormat.BOTTOM).
 				grids(Infected.numberOfDays() - 1, 10)).
 				xAxis("Days", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT)).
-				yAxis("Ratio", Plot.axisOpts().format(Plot.AxisFormat.NUMBER));
+				yAxis("Ratio [%]", Plot.axisOpts().format(Plot.AxisFormat.NUMBER));
 		
-		plot.series("Ratio of total infected to total tested", infected_tested, 
+		plot.series("Ratio [%] of total infected to total tested", infected_tested, 
 				Plot.seriesOpts().
 				color(Color.BLUE).
 				marker(Plot.Marker.NONE));
