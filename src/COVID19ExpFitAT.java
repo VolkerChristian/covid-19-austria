@@ -96,7 +96,7 @@ class ExpFit {
 	}
 
 	public static ExpFit expFit(long[] cases, int max) {
-		ExpFit fit = new ExpFit(a(cases, max), b(cases, max));
+		ExpFit fit = new ExpFit(ExpFit.a(cases, max), ExpFit.b(cases, max));
 
 		for (int i = 0; i < max; i++) {
 			double value = (Math.exp(fit.a()) * Math.exp(fit.b() * i));
@@ -220,6 +220,8 @@ public class COVID19ExpFitAT {
 		LocalDate localDate = LocalDate.now();
 		
 		ExpFit expFit = ExpFit.expFit(cases, numberOfDays - offset);
+		System.out.println("A = " + Math.exp(expFit.a()));
+		System.out.println("B = " + expFit.b()); 
 		Plot.Data fit = expFit.fit(numberOfDays);
 		plot.series("Fit: " + dtf.format(localDate.minusDays(offset)), fit,
 				Plot.seriesOpts().color(color).marker(Plot.Marker.NONE));
@@ -258,6 +260,7 @@ public class COVID19ExpFitAT {
 		Infected.update("23.3.", 3924, 2061);
 		Infected.update("24.3.", 4876, 4962); // tested total: 28391
 		Infected.update("25.3.", 5560, 4016); // tested total: 32407
+		Infected.update("26.3.", 6398, 3588); // tested total: 35995
 
 		System.out.println("Total Tested: " + Infected.getTotalTested());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
