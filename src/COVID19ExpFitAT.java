@@ -220,13 +220,18 @@ public class COVID19ExpFitAT {
 		LocalDate localDate = LocalDate.now();
 		
 		ExpFit expFit = ExpFit.expFit(cases, numberOfDays - offset);
-		System.out.println("A = " + Math.exp(expFit.a()));
-		System.out.println("B = " + expFit.b()); 
+		
 		Plot.Data fit = expFit.fit(numberOfDays);
-		plot.series("Fit: " + dtf.format(localDate.minusDays(offset)), fit,
-				Plot.seriesOpts().color(color).marker(Plot.Marker.NONE));
-		System.out.println("Error: Today - 2 Days: " + Math.sqrt(expFit.error2()));
-		System.out.println("Double ratio: " + expFit.dt());
+		
+		plot.series("Fit: " + dtf.format(localDate.minusDays(offset)), 
+				fit,
+				Plot.seriesOpts().
+				color(color).
+				marker(Plot.Marker.NONE)
+				);
+		
+		System.out.println("Error: Today - " + offset + " Days: " + Math.sqrt(expFit.error2()));
+		System.out.println("Double ratio: Today - " + offset + " Days:  " + expFit.dt());
 	}
 	
 	public static void main(String[] args) {
@@ -261,7 +266,8 @@ public class COVID19ExpFitAT {
 		Infected.update("24.3.", 4876, 4962); // tested total: 28391
 		Infected.update("25.3.", 5560, 4016); // tested total: 32407
 		Infected.update("26.3.", 6398, 3588); // tested total: 35995
-		Infected.update("27.3.", 7399, 3557); // tested total 39552
+		Infected.update("27.3.", 7399, 3557); // tested total: 39552
+		Infected.update("28.3.", 7995, 3198); // tested total: 42750
 
 		System.out.println("Total Tested: " + Infected.getTotalTested());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
@@ -272,7 +278,9 @@ public class COVID19ExpFitAT {
 		System.out.println(dateString);
 
 		Plot plot = Plot.
-				plot(Plot.plotOpts().height(700).width(1024).
+				plot(Plot.plotOpts().
+						height(700).
+						width(1024).
 						title("COVID-19 - Least Squares Exponential Fit (Austria) - " + dateString).
 						legend(Plot.LegendFormat.BOTTOM).
 						grids(Infected.numberOfDays() - 1, 10)).
@@ -298,7 +306,7 @@ public class COVID19ExpFitAT {
 /*		
 		for (int i = numberOfDays - 5; i >= 0; i--) {
 
-			COVID19ExpFitAT.plot(plot, cases, numberOfDays, i, Color.GREEN);
+			COVID19ExpFitAT.plot(plot, cases, numberOfDays, i, Color.getHSBColor(1 - (float) i / numberOfDays, 1, 1));
 		}
 */
 
