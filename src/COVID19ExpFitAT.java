@@ -268,6 +268,7 @@ public class COVID19ExpFitAT {
 		Infected.update("26.3.", 6398, 3588); // tested total: 35995
 		Infected.update("27.3.", 7399, 3557); // tested total: 39552
 		Infected.update("28.3.", 7995, 3198); // tested total: 42750
+		Infected.update("29.3.", 8536, 3691); // tested total: 46441
 
 		System.out.println("Total Tested: " + Infected.getTotalTested());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
