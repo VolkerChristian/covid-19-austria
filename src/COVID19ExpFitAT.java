@@ -399,7 +399,6 @@ public class COVID19ExpFitAT {
 		Infected.update("2.4.", 10967, 36327); // tested total: 92190
 		Infected.update("3.4.", 11383, 6153); // tested total: 98343
 		Infected.update("4.4.", 11665, 5791); // tested total: 104134 
-		Infected.update("5.4.", 11767, 0);
 
 		double[] result = FindLogisticFit.findLogisticFit(Infected.cases(), args);
 		
