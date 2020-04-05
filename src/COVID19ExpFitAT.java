@@ -8,6 +8,89 @@ import java.util.Iterator;
 
 import com.github.plot.*;
 
+import com.wolfram.jlink.*;
+
+class FindLogisticFit {
+	public static double[] findLogisticFit(long[] cases, String[] args) {
+		String empiricData = "{";
+		
+		for (int i = 0; i < cases.length; i++) {
+			empiricData += "{ " + i + ", " + cases[i] + "}";
+			if (i < cases.length - 1) {
+				empiricData += ", ";
+			}
+		}
+		empiricData += "}";
+		
+//		System.out.println("Arg: " + arg);
+		
+		KernelLink ml = null;
+
+        try {
+            ml = MathLinkFactory.createKernelLink(args);
+        } catch (MathLinkException e) {
+            System.out.println("Fatal error opening link: " + e.getMessage());
+            return null;
+        }
+        double[] res = null;
+        
+        try {
+            // Get rid of the initial InputNamePacket the kernel will send
+            // when it is launched.
+            ml.discardAnswer();
+
+            ml.evaluate("<<MyPackage.m");
+            ml.discardAnswer();
+
+            ml.evaluate("EmpiricData = " + empiricData);
+            ml.discardAnswer();
+            
+            ml.evaluate("LogisticModel = a / (1 + b * Exp[-c (x - d)])");
+            ml.discardAnswer();
+/*            
+            String out = ml.evaluateToOutputForm(
+            		"LogisticModelFitParameter = FindFit[EmpiricData, LogisticModel, {a, b, c, d}, x]", 0);
+            System.out.println("Res: " + out);
+*/            
+            ml.evaluate("LogisticModelFitParameter = FindFit[EmpiricData, LogisticModel, {a, b, c, d}, x]");
+            ml.waitForAnswer();
+            
+            Expr exp = ml.getExpr();
+            
+            ml.evaluate("a /. " + exp.part(1));
+            ml.waitForAnswer();
+            double a = ml.getDouble();
+            
+            ml.evaluate("b /. " + exp.part(2));
+            ml.waitForAnswer();
+            double b = ml.getDouble();
+            
+            ml.evaluate("c /. " + exp.part(3));
+            ml.waitForAnswer();
+            double c = ml.getDouble();
+
+            ml.evaluate("d /. " + exp.part(4));
+            ml.waitForAnswer();
+            double d = ml.getDouble();
+            
+            System.out.println("a = " + a + ", b = " + b + ", c = " + c + ", d = " + d);
+            
+            double wp = Math.log(b)/c + d;
+            
+            System.out.println("Wendepunkt: " + wp);
+            System.out.println("y(wp) " + a / (1 + b * Math.exp(-c * (wp - d))));
+            
+            res = new double[]{a, b, c, d};
+            
+        } catch (MathLinkException e) {
+            System.out.println("MathLinkException occurred: " + e.getMessage());
+        } finally {
+        	ml.close();
+        }
+        return res;
+	}
+}
+
 class ExpFit {
 	private double _a;
 	private double _b;
@@ -140,6 +223,21 @@ class ExpFit {
 
 		return fit;
 	}
+	
+	public static Plot.Data logisticFit(long size, double a, double b, double c, double d) {
+		Plot.Data fit = Plot.data();
+		
+		Calendar cal = Calendar.getInstance();
+		cal.set(2020, 1, 25);
+		
+		for (int i = 0; i < size; i++) {
+			int value = (int) (a / (1 + b * Math.exp(-c * (i - d))));
+			fit.xy(DateWithOffset.getTime(i),  value);
+			cal.add(Calendar.DAY_OF_MONTH, 1);
+		}
+		
+		return fit;
+	}
 }
 
 class Infected {
@@ -198,6 +296,16 @@ class Infected {
 	public static long getTotalTested() {
 		return Infected.totalTested;
 	}
+	
+	public static String list() {
+		String string = "";
+		
+		for (int i = 0; i < list.size(); i++) {
+			string += "{" + i + "," + list.get(i).infectedCount + "}, ";
+		}
+		
+		return string;
+	}
 }
 
 class DateWithOffset {
@@ -223,15 +331,31 @@ public class COVID19ExpFitAT {
 		
 		Plot.Data fit = expFit.fit(numberOfDays);
 		
-		plot.series("Fit: " + dtf.format(localDate.minusDays(offset)), 
+		plot.series("Exp-Fit: " + dtf.format(localDate.minusDays(offset)), 
 				fit,
 				Plot.seriesOpts().
 				color(color).
+				line(Plot.Line.SOLID).
 				marker(Plot.Marker.NONE)
 				);
 		
 		System.out.println("Error: Today - " + offset + " Days: " + Math.sqrt(expFit.error2()));
 		System.out.println("Double ratio: Today - " + offset + " Days:  " + expFit.dt());
+	}
+	
+	public static void plotLogistic(Plot plot, int numberOfDays, int offset, Color color, double a, double b, double c, double d) {
+		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+		LocalDate localDate = LocalDate.now();
+		
+		Plot.Data fit = ExpFit.logisticFit(numberOfDays - offset, a, b, c, d);
+		
+		plot.series("Log-Fit: " + dtf.format(localDate.minusDays(offset)),
+				fit,
+				Plot.seriesOpts().
+				color(color).
+				marker(Plot.Marker.NONE)
+				);
 	}
 	
 	public static void main(String[] args) {
@@ -269,7 +393,18 @@ public class COVID19ExpFitAT {
 		Infected.update("27.3.", 7399, 3557); // tested total: 39552
 		Infected.update("28.3.", 7995, 3198); // tested total: 42750
 		Infected.update("29.3.", 8536, 3691); // tested total: 46441
+		Infected.update("30.3.", 9377, 3014); // tested total: 49455
+		Infected.update("31.3.", 9974, 2889); // tested total: 52344
+		Infected.update("1.4.", 10482, 3519); // tested total: 55863
+		Infected.update("2.4.", 10967, 36327); // tested total: 92190
+		Infected.update("3.4.", 11383, 6153); // tested total: 98343
+		Infected.update("4.4.", 11665, 5791); // tested total: 104134 
+		Infected.update("5.4.", 11767, 0);
 
+		double[] result = FindLogisticFit.findLogisticFit(Infected.cases(), args);
+		
+//		System.out.println(Infected.list());
+		
 		System.out.println("Total Tested: " + Infected.getTotalTested());
 		DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 		LocalDate localDate = LocalDate.now();
@@ -282,11 +417,12 @@ public class COVID19ExpFitAT {
 				plot(Plot.plotOpts().
 						height(700).
 						width(1024).
-						title("COVID-19 - Least Squares Exponential Fit (Austria) - " + dateString).
+						title("COVID-19 - Least Squares Exponential & Logistic Fit (Austria) - " + dateString).
 						legend(Plot.LegendFormat.BOTTOM).
 						grids(Infected.numberOfDays() - 1, 10)).
-				xAxis("Days", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT)).
-				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 10000));
+				xAxis("Days", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT)).//range(0, 18)).
+				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 15000));
+//				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 500000));
 
 		long[] cases = Infected.cases();
 		int numberOfDays = Infected.numberOfDays();
@@ -296,14 +432,25 @@ public class COVID19ExpFitAT {
 		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 0, Color.BLUE);
 
 // Fit for today - 1
-		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 1, Color.CYAN);
+//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 22, Color.ORANGE);
 
 // Fit for today - 3
-		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 3, Color.GREEN);
+//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 3, Color.GREEN);
 		
 // Fit for today - 6
-		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 6, Color.ORANGE);
+//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 6, Color.ORANGE);
 
+		COVID19ExpFitAT.plotLogistic(plot, numberOfDays, 0, Color.BLACK, 
+				result[0], result[1], result[2], result[3]
+				);
+		
+		Plot.Data asymptote = Plot.data().xy(0, result[0]).xy(numberOfDays - 1, result[0]);
+		plot.series("Asymptote (Log-Fit): " + dtf.format(localDate.minusDays(0)),
+				asymptote,
+				Plot.seriesOpts().
+				color(Color.GREEN).
+				marker(Plot.Marker.NONE)
+				);
 /*		
 		for (int i = numberOfDays - 5; i >= 0; i--) {
 
@@ -316,7 +463,11 @@ public class COVID19ExpFitAT {
 		for (int i = 0; i < numberOfDays; i++) {
 			empiric.xy(DateWithOffset.getTime(i), cases[i]);
 		}
-		plot.series("Real (3:00 p.m.)", empiric, Plot.seriesOpts().color(Color.RED).marker(Plot.Marker.NONE));
+		plot.series("Real (3:00 p.m.)", empiric, Plot.seriesOpts().
+				color(Color.RED).
+				line(Plot.Line.NONE).
+				marker(Plot.Marker.CIRCLE));
+//				marker(Plot.Marker.NONE));
 
 		
 		try {
