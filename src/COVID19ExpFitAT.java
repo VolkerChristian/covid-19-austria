@@ -387,20 +387,50 @@ public class COVID19ExpFitAT {
 		Infected.update("21.3.", 2814, 2932);
 		Infected.update("22.3.", 3244, 2823);
 		Infected.update("23.3.", 3924, 2061);
-		Infected.update("24.3.", 4876, 4962); // tested total: 28391
-		Infected.update("25.3.", 5560, 4016); // tested total: 32407
-		Infected.update("26.3.", 6398, 3588); // tested total: 35995
-		Infected.update("27.3.", 7399, 3557); // tested total: 39552
-		Infected.update("28.3.", 7995, 3198); // tested total: 42750
-		Infected.update("29.3.", 8536, 3691); // tested total: 46441
-		Infected.update("30.3.", 9377, 3014); // tested total: 49455
-		Infected.update("31.3.", 9974, 2889); // tested total: 52344
-		Infected.update("1.4.", 10482, 3519); // tested total: 55863
+		Infected.update("24.3.", 4876, 4962);  // tested total: 28391
+		Infected.update("25.3.", 5560, 4016);  // tested total: 32407
+		Infected.update("26.3.", 6398, 3588);  // tested total: 35995
+		Infected.update("27.3.", 7399, 3557);  // tested total: 39552
+		Infected.update("28.3.", 7995, 3198);  // tested total: 42750
+		Infected.update("29.3.", 8536, 3691);  // tested total: 46441
+		Infected.update("30.3.", 9377, 3014);  // tested total: 49455
+		Infected.update("31.3.", 9974, 2889);  // tested total: 52344
+		Infected.update("1.4.", 10482, 3519);  // tested total: 55863
 		Infected.update("2.4.", 10967, 36327); // tested total: 92190
-		Infected.update("3.4.", 11383, 6153); // tested total: 98343
-		Infected.update("4.4.", 11665, 5791); // tested total: 104134 
-		Infected.update("5.4.", 11907, 4282); // tested total:  108416
+		Infected.update("3.4.", 11383, 6153);  // tested total: 98343
+		Infected.update("4.4.", 11665, 5791);  // tested total: 104134 
+		Infected.update("5.4.", 11907, 4282);  // tested total: 108416
+		Infected.update("6.4.", 12206, 2880);  // tested total: 111296
+		Infected.update("7.4.", 12519, 3939);  // tested total: 115235
+		Infected.update("8.4.", 12852, 5520);  // tested total: 120755
+		Infected.update("9.4.", 13138, 5532);  // tested total: 126287
+		Infected.update("10.4.", 13492, 8456); // tested total: 134743
+		Infected.update("11.4.", 13776, 6232); // tested total: 140975
+		Infected.update("12.4.", 13894, 3902); // tested total: 144877
+		Infected.update("13.4.", 13999, 3535); // tested total: 148412
+		Infected.update("14.4.", 14159, 3384); // tested total: 151796
+		Infected.update("15.4.", 14321, 5005); // tested total: 156801
+		Infected.update("16.4.", 14451, 6015); // tested total: 162816
+		Infected.update("17.4.", 14553, 6456); // tested total: 169272
+		Infected.update("18.4.", 14637, 6660); // tested total: 175932
+		Infected.update("19.4.", 14696, 3311); // tested total: 179243
+		Infected.update("20.4.", 14755, 3706); // tested total: 182949
+		Infected.update("21.4.", 14810, 6069); // tested total: 189018
+		Infected.update("22.4.", 14889, 12776); // tested total: 201794
+		Infected.update("23.4.", 14963, 4041); // tested total: 205835
+		Infected.update("24.4.", 15038, 6851); // tested total: 212686
+		Infected.update("25.4.", 15117, 8403); // tested total: 221089
+		Infected.update("26.4.", 15175, 6542); // tested total: 227631
+		Infected.update("27.4.", 15239, 4906); // tested total: 232537
+		Infected.update("28.4.", 15286, 7041); // tested total: 239578
+		Infected.update("29.4.", 15352, 8176); // tested total: 247754
+		Infected.update("30.4.", 15424, 8645); // tested total: 256399
+		Infected.update("1.5.", 15465, 7680);  // tested total: 264079
 
+
+		
+		System.out.println(Double.longBitsToDouble(Double.doubleToLongBits(Math.PI)));
+		
 		double[] result = FindLogisticFit.findLogisticFit(Infected.cases(), args);
 		
 //		System.out.println(Infected.list());
@@ -421,24 +451,12 @@ public class COVID19ExpFitAT {
 						legend(Plot.LegendFormat.BOTTOM).
 						grids(Infected.numberOfDays() - 1, 10)).
 				xAxis("Days", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT)).//range(0, 18)).
-				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 15000));
-//				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 500000));
+				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 16000));
+//				yAxis("Infected", Plot.axisOpts().format(Plot.AxisFormat.NUMBER_INT).range(0, 1000000));
 
 		long[] cases = Infected.cases();
 		int numberOfDays = Infected.numberOfDays();
 		System.out.println("NumDays: " + numberOfDays);
-
-// Fit for today
-		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 0, Color.BLUE);
-
-// Fit for today - 1
-//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 22, Color.ORANGE);
-
-// Fit for today - 3
-//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 3, Color.GREEN);
-		
-// Fit for today - 6
-//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 6, Color.ORANGE);
 
 		COVID19ExpFitAT.plotLogistic(plot, numberOfDays, 0, Color.BLACK, 
 				result[0], result[1], result[2], result[3]
@@ -451,6 +469,43 @@ public class COVID19ExpFitAT {
 				color(Color.GREEN).
 				marker(Plot.Marker.NONE)
 				);
+		
+// Fit for today
+		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 0, Color.BLUE);
+
+// Fit for today - 1
+//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, Infected.numberOfDays() - 21, Color.ORANGE);
+		
+		Plot.Data sd = Plot.data().xy(20, 0).xy(20, 100000000);
+		plot.series("Social Distancing (16.3.2020 - Day 20", sd, Plot.seriesOpts().
+				color(Color.BLACK).
+				lineWidth(1).
+				marker(Plot.Marker.NONE));
+		
+		sd = Plot.data().xy(49, 0).xy(49, 100000000);
+		plot.series("14.4.2020: 1st easing", sd, Plot.seriesOpts().
+				color(Color.MAGENTA).
+				lineWidth(1).
+				marker(Plot.Marker.NONE));
+
+// Fit for today - 3
+//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 3, Color.GREEN);
+		
+// Fit for today - 6
+//		COVID19ExpFitAT.plot(plot, cases, numberOfDays, 6, Color.ORANGE);
+/*
+		COVID19ExpFitAT.plotLogistic(plot, numberOfDays, 0, Color.BLACK, 
+				result[0], result[1], result[2], result[3]
+				);
+		
+		Plot.Data asymptote = Plot.data().xy(0, result[0]).xy(numberOfDays - 1, result[0]);
+		plot.series("Asymptote (Log-Fit): " + dtf.format(localDate.minusDays(0)),
+				asymptote,
+				Plot.seriesOpts().
+				color(Color.GREEN).
+				marker(Plot.Marker.NONE)
+				);
+				*/
 /*		
 		for (int i = numberOfDays - 5; i >= 0; i--) {
 
